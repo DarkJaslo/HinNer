@@ -14,8 +14,8 @@ class exprsVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by exprsParser#suma.
-    def visitSuma(self, ctx:exprsParser.SumaContext):
+    # Visit a parse tree produced by exprsParser#sumaResta.
+    def visitSumaResta(self, ctx:exprsParser.SumaRestaContext):
         return self.visitChildren(ctx)
 
 
@@ -29,18 +29,13 @@ class exprsVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by exprsParser#resta.
-    def visitResta(self, ctx:exprsParser.RestaContext):
+    # Visit a parse tree produced by exprsParser#parentesi.
+    def visitParentesi(self, ctx:exprsParser.ParentesiContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by exprsParser#divisio.
-    def visitDivisio(self, ctx:exprsParser.DivisioContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by exprsParser#producte.
-    def visitProducte(self, ctx:exprsParser.ProducteContext):
+    # Visit a parse tree produced by exprsParser#divisioProducte.
+    def visitDivisioProducte(self, ctx:exprsParser.DivisioProducteContext):
         return self.visitChildren(ctx)
 
 

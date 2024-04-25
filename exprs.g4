@@ -2,11 +2,10 @@
 grammar exprs;
 root : expr             // l'etiqueta ja és root
      ;
-expr : <assoc=right> expr '^' expr # potencia
-     | expr '/' expr    # divisio
-     | expr '*' expr    # producte
-     | expr '+' expr    # suma
-     | expr '-' expr    # resta
+expr : '(' expr ')' #parentesi
+     | <assoc=right> expr '^' expr # potencia
+     | expr ('/'|'*') expr    # divisioProducte
+     | expr ('+'|'-') expr    # sumaResta
      | NUM              # numero
      ;
 NUM : [0-9]+ ;
