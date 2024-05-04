@@ -44,10 +44,5 @@ class hmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by hmParser#abstraccio.
-    def visitAbstraccio(self, ctx:hmParser.AbstraccioContext):
-        return self.visitChildren(ctx)
-
-
 
 del hmParser
