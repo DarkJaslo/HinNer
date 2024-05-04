@@ -14,13 +14,8 @@ class hmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by hmParser#sumaResta.
-    def visitSumaResta(self, ctx:hmParser.SumaRestaContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by hmParser#potencia.
-    def visitPotencia(self, ctx:hmParser.PotenciaContext):
+    # Visit a parse tree produced by hmParser#termeAbstraccio.
+    def visitTermeAbstraccio(self, ctx:hmParser.TermeAbstraccioContext):
         return self.visitChildren(ctx)
 
 
@@ -34,8 +29,23 @@ class hmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by hmParser#divisioProducte.
-    def visitDivisioProducte(self, ctx:hmParser.DivisioProducteContext):
+    # Visit a parse tree produced by hmParser#termeOperador.
+    def visitTermeOperador(self, ctx:hmParser.TermeOperadorContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by hmParser#paraula.
+    def visitParaula(self, ctx:hmParser.ParaulaContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by hmParser#termeAplicacio.
+    def visitTermeAplicacio(self, ctx:hmParser.TermeAplicacioContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by hmParser#abstraccio.
+    def visitAbstraccio(self, ctx:hmParser.AbstraccioContext):
         return self.visitChildren(ctx)
 
 
