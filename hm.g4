@@ -21,13 +21,11 @@ root : terme             // l'etiqueta ja és root
 terme : PARAULA       #paraula
       | NUM           #numero
       | '(' terme ')' #parentesi
-      | abstraccio    #termeAbstraccio
       | terme terme   #termeAplicacio
+      | '\\' PARAULA '->' terme #termeAbstraccio
       | ('+'|'-'|'*'|'/') #termeOperador
      ;
 
-abstraccio : '\\' PARAULA '->' terme 
-     ;
 NUM : [0-9]+ ;
 WS  : [ \t\n\r]+ -> skip ;
 PARAULA  : [a-zA-Z\u0080-\u00FF]+ ;
