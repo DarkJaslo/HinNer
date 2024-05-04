@@ -1,5 +1,5 @@
 // Gramàtica per expressions senzilles
-grammar exprs;
+grammar hm;
 root : expr             // l'etiqueta ja és root
      ;
 expr : '(' expr ')' #parentesi

@@ -1,4 +1,4 @@
-# Generated from exprs.g4 by ANTLR 4.13.1
+# Generated from hm.g4 by ANTLR 4.13.1
 from antlr4 import *
 from io import StringIO
 import sys
@@ -30,7 +30,7 @@ def serializedATN():
         4,0,38,43,50,1,6,0,0
     ]
 
-class exprsLexer(Lexer):
+class hmLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -60,7 +60,7 @@ class exprsLexer(Lexer):
     ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", 
                   "NUM", "WS", "WORD" ]
 
-    grammarFileName = "exprs.g4"
+    grammarFileName = "hm.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)

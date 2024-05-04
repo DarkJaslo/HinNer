@@ -1,4 +1,4 @@
-# Generated from exprs.g4 by ANTLR 4.13.1
+# Generated from hm.g4 by ANTLR 4.13.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -22,9 +22,9 @@ def serializedATN():
         12,23,25
     ]
 
-class exprsParser ( Parser ):
+class hmParser ( Parser ):
 
-    grammarFileName = "exprs.g4"
+    grammarFileName = "hm.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -73,11 +73,11 @@ class exprsParser ( Parser ):
             self.parser = parser
 
         def expr(self):
-            return self.getTypedRuleContext(exprsParser.ExprContext,0)
+            return self.getTypedRuleContext(hmParser.ExprContext,0)
 
 
         def getRuleIndex(self):
-            return exprsParser.RULE_root
+            return hmParser.RULE_root
 
         def accept(self, visitor:ParseTreeVisitor):
             if hasattr( visitor, "visitRoot" ):
@@ -90,7 +90,7 @@ class exprsParser ( Parser ):
 
     def root(self):
 
-        localctx = exprsParser.RootContext(self, self._ctx, self.state)
+        localctx = hmParser.RootContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_root)
         try:
             self.enterOuterAlt(localctx, 1)
@@ -114,7 +114,7 @@ class exprsParser ( Parser ):
 
 
         def getRuleIndex(self):
-            return exprsParser.RULE_expr
+            return hmParser.RULE_expr
 
      
         def copyFrom(self, ctx:ParserRuleContext):
@@ -123,15 +123,15 @@ class exprsParser ( Parser ):
 
     class SumaRestaContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a exprsParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a hmParser.ExprContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def expr(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(exprsParser.ExprContext)
+                return self.getTypedRuleContexts(hmParser.ExprContext)
             else:
-                return self.getTypedRuleContext(exprsParser.ExprContext,i)
+                return self.getTypedRuleContext(hmParser.ExprContext,i)
 
 
         def accept(self, visitor:ParseTreeVisitor):
@@ -143,15 +143,15 @@ class exprsParser ( Parser ):
 
     class PotenciaContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a exprsParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a hmParser.ExprContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def expr(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(exprsParser.ExprContext)
+                return self.getTypedRuleContexts(hmParser.ExprContext)
             else:
-                return self.getTypedRuleContext(exprsParser.ExprContext,i)
+                return self.getTypedRuleContext(hmParser.ExprContext,i)
 
 
         def accept(self, visitor:ParseTreeVisitor):
@@ -163,12 +163,12 @@ class exprsParser ( Parser ):
 
     class NumeroContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a exprsParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a hmParser.ExprContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def NUM(self):
-            return self.getToken(exprsParser.NUM, 0)
+            return self.getToken(hmParser.NUM, 0)
 
         def accept(self, visitor:ParseTreeVisitor):
             if hasattr( visitor, "visitNumero" ):
@@ -179,12 +179,12 @@ class exprsParser ( Parser ):
 
     class ParentesiContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a exprsParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a hmParser.ExprContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def expr(self):
-            return self.getTypedRuleContext(exprsParser.ExprContext,0)
+            return self.getTypedRuleContext(hmParser.ExprContext,0)
 
 
         def accept(self, visitor:ParseTreeVisitor):
@@ -196,15 +196,15 @@ class exprsParser ( Parser ):
 
     class DivisioProducteContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a exprsParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a hmParser.ExprContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def expr(self, i:int=None):
             if i is None:
-                return self.getTypedRuleContexts(exprsParser.ExprContext)
+                return self.getTypedRuleContexts(hmParser.ExprContext)
             else:
-                return self.getTypedRuleContext(exprsParser.ExprContext,i)
+                return self.getTypedRuleContext(hmParser.ExprContext,i)
 
 
         def accept(self, visitor:ParseTreeVisitor):
@@ -218,7 +218,7 @@ class exprsParser ( Parser ):
     def expr(self, _p:int=0):
         _parentctx = self._ctx
         _parentState = self.state
-        localctx = exprsParser.ExprContext(self, self._ctx, _parentState)
+        localctx = hmParser.ExprContext(self, self._ctx, _parentState)
         _prevctx = localctx
         _startState = 2
         self.enterRecursionRule(localctx, 2, self.RULE_expr, _p)
@@ -229,23 +229,23 @@ class exprsParser ( Parser ):
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [1]:
-                localctx = exprsParser.ParentesiContext(self, localctx)
+                localctx = hmParser.ParentesiContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
 
                 self.state = 7
-                self.match(exprsParser.T__0)
+                self.match(hmParser.T__0)
                 self.state = 8
                 self.expr(0)
                 self.state = 9
-                self.match(exprsParser.T__1)
+                self.match(hmParser.T__1)
                 pass
             elif token in [8]:
-                localctx = exprsParser.NumeroContext(self, localctx)
+                localctx = hmParser.NumeroContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 11
-                self.match(exprsParser.NUM)
+                self.match(hmParser.NUM)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -263,20 +263,20 @@ class exprsParser ( Parser ):
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
                     if la_ == 1:
-                        localctx = exprsParser.PotenciaContext(self, exprsParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = hmParser.PotenciaContext(self, hmParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 14
                         if not self.precpred(self._ctx, 4):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
                         self.state = 15
-                        self.match(exprsParser.T__2)
+                        self.match(hmParser.T__2)
                         self.state = 16
                         self.expr(4)
                         pass
 
                     elif la_ == 2:
-                        localctx = exprsParser.DivisioProducteContext(self, exprsParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = hmParser.DivisioProducteContext(self, hmParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 17
                         if not self.precpred(self._ctx, 3):
@@ -294,7 +294,7 @@ class exprsParser ( Parser ):
                         pass
 
                     elif la_ == 3:
-                        localctx = exprsParser.SumaRestaContext(self, exprsParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = hmParser.SumaRestaContext(self, hmParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 20
                         if not self.precpred(self._ctx, 2):

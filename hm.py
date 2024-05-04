@@ -1,43 +1,43 @@
 from antlr4 import *
-from exprsLexer import exprsLexer
-from exprsParser import exprsParser
-from exprsVisitor import exprsVisitor
+from hmLexer import hmLexer
+from hmParser import hmParser
+from hmVisitor import hmVisitor
 
-class TreeVisitor(exprsVisitor):
+class TreeVisitor(hmVisitor):
     def __init__(self):
         self.nivell = 0
 
-    # Visit a parse tree produced by exprsParser#root.
-    def visitRoot(self, ctx:exprsParser.RootContext):
+    # Visit a parse tree produced by hmParser#root.
+    def visitRoot(self, ctx:hmParser.RootContext):
         [expressio] = list(ctx.getChildren())
         print(self.visit(expressio))
 
-    # Visit a parse tree produced by exprsParser#potencia.
-    def visitPotencia(self, ctx:exprsParser.PotenciaContext):
+    # Visit a parse tree produced by hmParser#potencia.
+    def visitPotencia(self, ctx:hmParser.PotenciaContext):
         [expressio1, operador, expressio2] = list(ctx.getChildren())
         return self.visit(expressio1) ** self.visit(expressio2)
 
-    # Visit a parse tree produced by exprsParser#numero.
-    def visitNumero(self, ctx:exprsParser.NumeroContext):
+    # Visit a parse tree produced by hmParser#numero.
+    def visitNumero(self, ctx:hmParser.NumeroContext):
         [numero] = list(ctx.getChildren())
         return int(numero.getText())
 
-    # Visit a parse tree produced by exprsParser#parentesi.
-    def visitParentesi(self, ctx:exprsParser.ParentesiContext):
+    # Visit a parse tree produced by hmParser#parentesi.
+    def visitParentesi(self, ctx:hmParser.ParentesiContext):
         [obrir, expressio, tancar] = list(ctx.getChildren())
         return self.visit(expressio)
 
 
-    # Visit a parse tree produced by exprsParser#resta.
-    def visitSumaResta(self, ctx:exprsParser.SumaRestaContext):
+    # Visit a parse tree produced by hmParser#resta.
+    def visitSumaResta(self, ctx:hmParser.SumaRestaContext):
         [expressio1, operador, expressio2] = list(ctx.getChildren())
         if operador.getText() == "+":
             return self.visit(expressio1) + self.visit(expressio2)
         elif operador.getText() == "-":
             return self.visit(expressio1) - self.visit(expressio2)
     
-    # Visit a parse tree produced by exprsParser#producte.
-    def visitDivisioProducte(self, ctx:exprsParser.DivisioProducteContext):
+    # Visit a parse tree produced by hmParser#producte.
+    def visitDivisioProducte(self, ctx:hmParser.DivisioProducteContext):
         [expressio1, operador, expressio2] = list(ctx.getChildren())
         if operador.getText() == "/":
             return self.visit(expressio1) / self.visit(expressio2)
@@ -45,9 +45,9 @@ class TreeVisitor(exprsVisitor):
             return self.visit(expressio1) * self.visit(expressio2)
 
 input_stream = InputStream(input('? '))
-lexer = exprsLexer(input_stream)
+lexer = hmLexer(input_stream)
 token_stream = CommonTokenStream(lexer)
-parser = exprsParser(token_stream)
+parser = hmParser(token_stream)
 tree = parser.root()
 
 if parser.getNumberOfSyntaxErrors() == 0:
