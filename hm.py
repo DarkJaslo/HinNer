@@ -6,6 +6,8 @@ from hmVisitor import hmVisitor
 from graphviz import Digraph
 import streamlit as st
 from dataclasses import dataclass
+from pickle import dumps, loads  #per Streamlit 
+from antlr4.error.ErrorListener import ErrorListener
 
 class Buit:
     pass
@@ -69,18 +71,38 @@ def printArbre(t: Arbre):
                 (ir,sr) = valorNode(r)
                 dot.edge(str(i),str(ir))
 
+class HinnerErrorListener(ErrorListener):
+    def __init__(self):
+        super(ErrorListener, self).__init__()
+        self.errors = []
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        error_message = f"Error de sintaxi a {line}:{column}: {msg}"
+        self.errors.append(error_message)
+
+    def getErrors(self):
+        return self.errors
 
 class TreeVisitor(hmVisitor):
 
-    def __init__(self) -> None:
+    def __init__(self, type_table) -> None:
         super().__init__()
         self.arbre = Buit()
         self.comptador = 0
+        self.type_table = type_table
+
+    def getTable(self):
+        return self.type_table
 
     # Visit a parse tree produced by hmParser#root.
     def visitRoot(self, ctx:hmParser.RootContext):
         res = self.visitChildren(ctx)
         return res
+    
+    def visitDefinicio(self, ctx:hmParser.DefinicioContext):
+        [thing, symb, type_id] = list(ctx.getChildren())
+        # La idea per mes tard es que type_id no sigui una string, sino un arbre d'inferencia
+        self.type_table[thing.getText()] = type_id.getText()  
 
 
     # Visit a parse tree produced by hmParser#termeAbstraccio.
@@ -141,6 +163,10 @@ submit_button = st.button("Submit")
 # Crea graf
 dot = Digraph()
 
+# Crea diccionari si es el primer cop que s'executa
+if 'type_table' not in st.session_state:
+    st.session_state['type_table'] = dumps({})
+
 # Quan es prem el boto
 if submit_button:
 
@@ -152,14 +178,31 @@ if submit_button:
     lexer = hmLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
     parser = hmParser(token_stream)
+
+    # Per gestionar els errors de sintaxi de forma custom
+    err_listener = HinnerErrorListener()
+    parser.removeErrorListeners()
+    parser.addErrorListener(err_listener)
+
     tree = parser.root()
 
     if parser.getNumberOfSyntaxErrors() == 0:
-        #st.write("No errors!")
-        visitor = TreeVisitor()
+        type_table = loads(st.session_state['type_table'])
+
+        visitor = TreeVisitor(type_table)
         arbre = visitor.visit(tree)
+
+        # Crea i dibuixa arbre d'expressions
         printArbre(arbre)
         st.graphviz_chart(dot.source)
-    else:
+
+        # Dibuixa taula de tipus
+        type_table = visitor.getTable()
+        st.dataframe(type_table)
+
+        st.session_state['type_table'] = dumps(type_table)
+    else: # Hi ha errors
         st.write(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
-        st.write(tree.toStringTree(recog=parser))
+        for error in err_listener.errors:
+            st.write(error)
+        #st.write(tree.toStringTree(recog=parser))
