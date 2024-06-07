@@ -20,7 +20,11 @@ root : terme             // l'etiqueta ja és root
      ;
 
 // Admet TYPEID a l'esquerra perque coses com 'Var' no es reconeixen com ID...
-def : (ID | TYPEID | NUM | '(' OP ')') '::' TYPEID   #definicio
+def : (ID | TYPEID | NUM | OPPAR) '::' tipus   #definicio
+     ;
+
+tipus: TYPEID       #tipusBase
+     | <assoc=right> tipus '->' tipus #tipusFuncio
      ;
 
 terme : ID       #paraula
@@ -28,10 +32,11 @@ terme : ID       #paraula
       | '(' terme ')' #parentesi
       | terme terme   #termeAplicacio
       | '\\' ID '->' terme #termeAbstraccio
-      | OP #termeOperador
+      | OPPAR #termeOperador
      ;
 
 OP : ('+'|'-'|'*'|'/');
+OPPAR: ('(+)'|'(-)'|'(*)'|'(/)') ;
 NUM : [0-9]+ ;
 WS  : [ \t\n\r]+ -> skip ;
 TYPEID : ('A'..'Z') ('a'..'z'|'A'..'Z')* ; //Paraules que comencen per majúscula, només text

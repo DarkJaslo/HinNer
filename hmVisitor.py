@@ -19,6 +19,16 @@ class hmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by hmParser#tipusBase.
+    def visitTipusBase(self, ctx:hmParser.TipusBaseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by hmParser#tipusFuncio.
+    def visitTipusFuncio(self, ctx:hmParser.TipusFuncioContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by hmParser#termeAbstraccio.
     def visitTermeAbstraccio(self, ctx:hmParser.TermeAbstraccioContext):
         return self.visitChildren(ctx)

@@ -8,6 +8,7 @@ import streamlit as st
 from dataclasses import dataclass
 from pickle import dumps, loads  #per Streamlit 
 from antlr4.error.ErrorListener import ErrorListener
+import pandas as pd # DataFrames
 
 # Generador pels tipus
 def generador_lletres():
@@ -65,20 +66,22 @@ def esBuit(t: Arbre):
         case Node():
             return False
         
-def assignaTipus(t: Arbre, type_table: dict):
+def assignaTipus(t: Arbre, type_table: dict, temporal_type_table: dict):
     match t:
         case Node(ind,sim,l,r,tip):
-            if sim != '@' and sim not in type_table.keys():
-                letter = next(lletres)
-                type_table[sim] = letter
 
-            if sim != '@':     
-                t = setTipus(t,type_table[sim])
+            if sim not in ['@','\u03BB']:
+                temp = False
+                if sim not in type_table.keys():
+                    if sim not in temporal_type_table.keys():
+                        temporal_type_table[sim] = next(lletres)
+                    temp = True
+                t = setTipus(t,temporal_type_table[sim]) if temp else setTipus(t,type_table[sim])
             else:
-                t = setTipus(t,next(lletres))
+                t = setTipus(t,next(lletres))                
                 
-            le = assignaTipus(l,type_table)
-            ri = assignaTipus(r,type_table)
+            le = assignaTipus(l,type_table,temporal_type_table)
+            ri = assignaTipus(r,type_table,temporal_type_table)
             return Node(ind,sim,le,ri,t.tipus)
         case Buit():
             return Buit()
@@ -128,9 +131,18 @@ class TreeVisitor(hmVisitor):
         return res
     
     def visitDefinicio(self, ctx:hmParser.DefinicioContext):
-        [thing, symb, type_id] = list(ctx.getChildren())
+        [thing, symb, typedef] = list(ctx.getChildren())
         # La idea per mes tard es que type_id no sigui una string, sino un arbre d'inferencia
-        self.type_table[thing.getText()] = type_id.getText()  
+        text = self.visit(typedef)
+        self.type_table[thing.getText()] = text 
+
+    def visitTipusBase(self, ctx:hmParser.TipusBaseContext):
+        [base] = list(ctx.getChildren())
+        return base.getText()
+
+    def visitTipusFuncio(self, ctx:hmParser.TipusFuncioContext):
+        [l, op, r] = ctx.getChildren()
+        return '(' + self.visit(l) + ' -> ' + self.visit(r) + ')'
 
 
     # Visit a parse tree produced by hmParser#termeAbstraccio.
@@ -221,13 +233,31 @@ if submit_button:
         arbre = visitor.visit(tree)
 
         # Crea i dibuixa arbre d'expressions
-        arbre = assignaTipus(arbre,type_table)
+        temporal_type_table = {}
+
+        arbre = assignaTipus(arbre,type_table,temporal_type_table)
+
+        # Dibuixa taula de tipus
+        #type_table = visitor.getTable()
+
+        final_table = { keys : values for keys, values in type_table.items()}
+        print('types')
+        print(type_table.items())
+        print('final types')
+        print(final_table.items())
+
+        for key,value in temporal_type_table.items():
+            final_table[key] = value
+
+        st.dataframe(final_table)
+
         printArbre(arbre)
         st.graphviz_chart(dot.source)
 
-        # Dibuixa taula de tipus
-        type_table = visitor.getTable()
-        st.dataframe(type_table)
+        print('types2')
+        print(type_table.items())
+        print('final types2')
+        print(final_table.items())
 
         st.session_state['type_table'] = dumps(type_table)
     else: # Hi ha errors
