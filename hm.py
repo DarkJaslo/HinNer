@@ -9,6 +9,13 @@ from dataclasses import dataclass
 from pickle import dumps, loads  #per Streamlit 
 from antlr4.error.ErrorListener import ErrorListener
 
+# Generador pels tipus
+def generador_lletres():
+    for c in range(ord('a'),ord('z')+1):
+        yield chr(c)
+
+lletres = generador_lletres()
+
 class Buit:
     pass
 
@@ -18,6 +25,7 @@ class Node:
     simbol: str
     esq: Arbre
     dre: Arbre
+    tipus: str = ''
 
 Arbre = Node | Buit
 
@@ -27,6 +35,11 @@ def valorNode(a: Arbre):
             return (-1,"NONE")
         case Node():
             return (a.index,a.simbol)
+        
+def setTipus(a: Arbre, tipus:str):
+    match a:
+        case Node(i,s,e,d,t):
+            return Node(i,s,e,d,tipus)
         
 def arbreEsq(a: Arbre): 
     match a:
@@ -51,25 +64,40 @@ def esBuit(t: Arbre):
             return True
         case Node():
             return False
+        
+def assignaTipus(t: Arbre, type_table: dict):
+    match t:
+        case Node(ind,sim,l,r,tip):
+            if sim != '@' and sim not in type_table.keys():
+                letter = next(lletres)
+                type_table[sim] = letter
+
+            if sim != '@':     
+                t = setTipus(t,type_table[sim])
+            else:
+                t = setTipus(t,next(lletres))
+                
+            le = assignaTipus(l,type_table)
+            ri = assignaTipus(r,type_table)
+            return Node(ind,sim,le,ri,t.tipus)
+        case Buit():
+            return Buit()
 
 def printArbre(t: Arbre):
     match t:
         #case Buit():
             #st.write("Buit")
-        case Node():
-            (i,s) = valorNode(t)
-            dot.node(str(i),s)
+        case Node(ind, sim, l, r, tip):
+            dot.node(str(ind),sim+"\n"+tip)
             #st.write("Node:",i,s)
-            l = arbreEsq(t)
-            r = arbreDre(t)
             printArbre(l)
             printArbre(r)
             if not esBuit(l):
                 (il,sl) = valorNode(l)
-                dot.edge(str(i),str(il))
+                dot.edge(str(ind),str(il))
             if not esBuit(r):
                 (ir,sr) = valorNode(r)
-                dot.edge(str(i),str(ir))
+                dot.edge(str(ind),str(ir))
 
 class HinnerErrorListener(ErrorListener):
     def __init__(self):
@@ -193,6 +221,7 @@ if submit_button:
         arbre = visitor.visit(tree)
 
         # Crea i dibuixa arbre d'expressions
+        arbre = assignaTipus(arbre,type_table)
         printArbre(arbre)
         st.graphviz_chart(dot.source)
 
