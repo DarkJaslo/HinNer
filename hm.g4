@@ -19,7 +19,7 @@ root : terme             // l'etiqueta ja és root
      | def
      ;
 
-// Admet TYPEID a l'esquerra perque coses com 'Var' no es reconeixen a ID...
+// Admet TYPEID a l'esquerra perque coses com 'Var' no es reconeixen com ID...
 def : (ID | TYPEID | NUM | '(' OP ')') '::' TYPEID   #definicio
      ;
 
@@ -34,7 +34,6 @@ terme : ID       #paraula
 OP : ('+'|'-'|'*'|'/');
 NUM : [0-9]+ ;
 WS  : [ \t\n\r]+ -> skip ;
-TYPEID : ('A'..'Z') ('a'..'z'|'A'..'Z')* ;
-ID : ('a'..'z'|'A'..'Z') (NUM|'_'|PARAULA)* ;
+TYPEID : ('A'..'Z') ('a'..'z'|'A'..'Z')* ; //Paraules que comencen per majúscula, només text
+ID : ('a'..'z'|'A'..'Z') (NUM|'_'|PARAULA)* ; //Comencen per una lletra i poden contenir números i '_'
 PARAULA : ('a'..'z'|'A'..'Z')+ ;
-//PARAULA  : [a-zA-Z\u0080-\u00FF]+ ; //Macro per ID, no es fa servir per res mes
