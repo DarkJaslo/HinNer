@@ -98,8 +98,16 @@ def grabTipus(tipus_sencer: str):
         ultim = -1
         
         if tipus_sencer[st] == '(': # El primer es una expressio amb parentesi [ex: (N -> N)]
-            end = tipus_sencer.find(')', st)
-            ultim -= 1
+            # Cal verificar parentesis multinivell
+            equil = 1
+            ind = 2
+            while equil > 0:
+                if tipus_sencer[ind] == '(':
+                    equil += 1
+                elif tipus_sencer[ind] == ')':
+                    equil -= 1
+                ind += 1
+            end = ind
         else: # Nomes es una paraula
             end = tipus_sencer.find(' ', st)
 
