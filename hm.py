@@ -9,13 +9,14 @@ from dataclasses import dataclass
 from pickle import dumps, loads  #per Streamlit 
 from antlr4.error.ErrorListener import ErrorListener
 
-# Generador pels tipus
+# Generador per les variables de tipus
 def generador_lletres():
     for c in range(ord('a'),ord('z')+1):
         yield chr(c)
 
 lletres = generador_lletres()
 
+# ----------------- Classe d'arbre semàntic ------------------------- #
 class Buit:
     pass
 
@@ -29,6 +30,8 @@ class Node:
 
 Arbre = Node | Buit
 
+# ----------------- Funcions amb l'arbre ------------------------- #
+
 def valorNode(a: Arbre):
     match a:
         case Buit():
@@ -40,29 +43,6 @@ def setTipus(a: Arbre, tipus:str):
     match a:
         case Node(i,s,e,d,t):
             return Node(i,s,e,d,tipus)
-        
-def setTipusSubs(a: Arbre, tipus_antic:str, tipus_nou:str):
-    match a:
-        case Node(i,s,e,d,t):
-            nou_tipus = t.replace(tipus_antic,tipus_nou)
-            return Node(i,s,e,d,nou_tipus)
-        
-def arbreEsq(a: Arbre): 
-    match a:
-        case Buit():
-            return Buit
-        case Node():
-            return a.esq
-        
-def arbreDre(a: Arbre): 
-    match a:
-        case Buit():
-            return Buit
-        case Node():
-            return a.dre
-        
-def creaArbre(t: TreeVisitor):
-    return t.visitRoot()
 
 def esBuit(t: Arbre):
     match t:
@@ -71,18 +51,21 @@ def esBuit(t: Arbre):
         case Node():
             return False
         
+# type_table és el diccionari amb els tipus explícitament definits
+# temporal_type_table és el diccionari amb símbols -> variables de tipus ('a', 'b', 'c'...)
 def assignaTipus(t: Arbre, type_table: dict, temporal_type_table: dict):
     match t:
         case Node(ind,sim,l,r,tip):
 
+            # Els diccionaris no tracten ni @ ni lambda
             if sim not in ['@','\u03BB']:
                 temp = False
-                if sim not in type_table.keys():
-                    if sim not in temporal_type_table.keys():
-                        temporal_type_table[sim] = next(lletres)
+                if sim not in type_table.keys(): # No te tipus ja definit
+                    if sim not in temporal_type_table.keys(): # Tampoc te variable de tipus
+                        temporal_type_table[sim] = next(lletres) 
                     temp = True
                 t = setTipus(t,temporal_type_table[sim]) if temp else setTipus(t,type_table[sim])
-            elif tip=='':
+            else:
                 t = setTipus(t,next(lletres))             
                 
             le = assignaTipus(l,type_table,temporal_type_table)
@@ -91,13 +74,11 @@ def assignaTipus(t: Arbre, type_table: dict, temporal_type_table: dict):
         case Buit():
             return Buit() 
 
+# Crea nodes i els connecta a l'arbre DOT
 def printArbre(t: Arbre):
     match t:
-        #case Buit():
-            #st.write("Buit")
         case Node(ind, sim, l, r, tip):
             dot.node(str(ind),sim+"\n"+tip)
-            #st.write("Node:",i,s)
             printArbre(l)
             printArbre(r)
             if not esBuit(l):
@@ -110,29 +91,37 @@ def printArbre(t: Arbre):
 class ExcepcioTipus(Exception):
     pass
 
-# A una definicio com (Tip -> (Tip2 -> Tip3)), agafa 'Tip'
+# A una definicio com (Tip -> (Tip2 -> Tip3)), agafa ('Tip', '(Tip2 -> Tip3)')
 def grabTipus(tipus_sencer: str):
-    st = 1
+    try:
+        st = 1
+        ultim = -1
+        
+        if tipus_sencer[st] == '(': # El primer es una expressio amb parentesi [ex: (N -> N)]
+            end = tipus_sencer.find(')', st)
+            ultim -= 1
+        else: # Nomes es una paraula
+            end = tipus_sencer.find(' ', st)
 
-    ultim = -1
-    if tipus_sencer[st] == '(': # Expressio amb parentesi [ex: (N -> N)]
-        end = tipus_sencer.find(')', st)
-        ultim -= 1
-    else:
-        end = tipus_sencer.find(' ', st)
+        return tipus_sencer[st:end], tipus_sencer[end+4:ultim] # +4 per treure ' -> '
+    except Exception as e:
+        raise Exception('Probablement estàs fent servir una funció sense definir-la primer.')
 
-    return tipus_sencer[st:end], tipus_sencer[end+4:ultim]
-
+# Deixa a type_vars_table per cada valor de temporal_type_table (variables de tipus) quin tipus real correspon
 def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_vars_table: dict):
     match t:
         case Node(ind, sim, l, r, tip):
-            if sim in type_table.keys():
+
+            if sim in type_table.keys(): # Ja se sap el tipus
                 return Node(ind,sim,l,r,type_table[sim])
-            elif sim in temporal_type_table.keys():
-                if temporal_type_table[sim] in type_vars_table.keys():
+            
+            elif sim in temporal_type_table.keys(): 
+
+                if temporal_type_table[sim] in type_vars_table.keys(): # Te un tipus temporal, però ja se'n sap el tipus real
                     return Node(ind,sim,l,r,type_vars_table[temporal_type_table[sim]])
                 return Node(ind,sim,l,r,temporal_type_table[sim])
-            elif sim == '@':
+            
+            elif sim == '@': # Aplicació
                 l = infereixTipus(l,type_table,temporal_type_table,type_vars_table)
                 ltip = l.tipus
                 r = infereixTipus(r,type_table,temporal_type_table,type_vars_table)
@@ -140,24 +129,26 @@ def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_va
 
                 ltipus, lresta = grabTipus(ltip)
 
+                # Es el tipus ja concret, o es una variable de tipus?
                 l_concret = True #No es gestionen funcions amb variables de tipus de moment
                 r_concret = rtip in type_table.values()
                 iguals = ltipus == rtip
 
                 if not iguals and l_concret and r_concret:
                     raise ExcepcioTipus(f"Error de tipus: {ltipus} vs {rtip}")
-                
-                #if iguals:
-                #    return lresta
                     
-                if l_concret and not r_concret:
+                if l_concret and not r_concret: # Sabem quin tipus ha de tenir R per entrar a la funcio de L
                     r = setTipus(r, ltipus)
                     type_vars_table[rtip] = ltipus
 
+                # El tipus de l'aplicació @ és el que queda de la funció aplicada
                 t = setTipus(t,lresta)
                 type_vars_table[tip] = lresta
-                return Node(ind,sim,l,r,lresta) # Sempre sabem el tipus de la funcio
-            elif sim == '\u03BB':
+                return Node(ind,sim,l,r,lresta)
+            
+            elif sim == '\u03BB': # Abstracció
+
+                # La funció està a la dreta, important començar per aquí
                 r = infereixTipus(r,type_table,temporal_type_table,type_vars_table)
                 l = infereixTipus(l,type_table,temporal_type_table,type_vars_table)
                 tipus = '(' + l.tipus + ' -> ' + r.tipus + ')'
@@ -165,9 +156,7 @@ def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_va
                 type_vars_table[tip] = tipus
                 return Node(ind,sim,l,r,tipus)
 
-                        
-
-
+# Per poder treure els errors de sintaxi per Streamlit
 class HinnerErrorListener(ErrorListener):
     def __init__(self):
         super(ErrorListener, self).__init__()
@@ -180,18 +169,19 @@ class HinnerErrorListener(ErrorListener):
     def getErrors(self):
         return self.errors
 
+# ------------------------------- Visitador ---------------------------------- #
+
 class TreeVisitor(hmVisitor):
 
     def __init__(self, type_table) -> None:
         super().__init__()
         self.arbre = Buit()
-        self.comptador = 0
+        self.comptador = 0  # Per numerar els nodes DOT 
         self.type_table = type_table
 
     def getTable(self):
         return self.type_table
 
-    # Visit a parse tree produced by hmParser#root.
     def visitRoot(self, ctx:hmParser.RootContext):
         res = self.visitChildren(ctx)
         return res
@@ -209,24 +199,17 @@ class TreeVisitor(hmVisitor):
         [l, op, r] = ctx.getChildren()
         return '(' + self.visit(l) + ' -> ' + self.visit(r) + ')'
 
-
-    # Visit a parse tree produced by hmParser#termeAbstraccio.
     def visitTermeAbstraccio(self, ctx:hmParser.TermeAbstraccioContext):
-
         [lamb, var, fletxa, terme] = list(ctx.getChildren())
         t = self.visit(terme)
 
         self.comptador += 1
         return Node(self.comptador,'\u03BB',Node(self.comptador+1,str(var),Buit(),Buit()),t)
 
-
-    # Visit a parse tree produced by hmParser#numero.
     def visitNumero(self, ctx:hmParser.NumeroContext):
         self.comptador += 1
         return Node(self.comptador,ctx.getText(),Buit(),Buit())
 
-
-    # Visit a parse tree produced by hmParser#parentesi.
     def visitParentesi(self, ctx:hmParser.ParentesiContext):
         [left, terme, right] = list(ctx.getChildren())
 
@@ -234,26 +217,17 @@ class TreeVisitor(hmVisitor):
         self.comptador += 1
         return Node(self.comptador,'('+t.simbol+')',Buit(),Buit())
 
-
-    # Visit a parse tree produced by hmParser#termeOperador.
     def visitTermeOperador(self, ctx:hmParser.TermeOperadorContext):
         [op] = list(ctx.getChildren())
 
         self.comptador += 1
         return Node(self.comptador,str(op),Buit(),Buit())
 
-
-    # Visit a parse tree produced by hmParser#paraula.
     def visitParaula(self, ctx:hmParser.ParaulaContext):
-
         self.comptador += 1
         return Node(self.comptador,ctx.getText(),Buit(),Buit())
 
-
-    # Visit a parse tree produced by hmParser#termeAplicacio.
     def visitTermeAplicacio(self, ctx:hmParser.TermeAplicacioContext):
-        #dot.node(str(ctx[0]),'@')
-
         [left, right] = list(ctx.getChildren())
         l = self.visit(left)
         r = self.visit(right)
@@ -261,6 +235,8 @@ class TreeVisitor(hmVisitor):
         self.comptador += 1
         return Node(self.comptador,"@",l,r)
         
+# -------------------------------------- Part Streamlit ------------------------------------ #
+
 # Crea interficie
 user_input = st.text_input("Expressió:")
 submit_button = st.button("Fer")
@@ -268,7 +244,7 @@ submit_button = st.button("Fer")
 # Crea graf
 dot = Digraph()
 
-# Crea diccionari si es el primer cop que s'executa
+# Crea diccionari de tipus reals si es el primer cop que s'executa
 if 'type_table' not in st.session_state:
     st.session_state['type_table'] = dumps({})
 
@@ -296,45 +272,30 @@ if submit_button:
         try:
             type_table = loads(st.session_state['type_table'])
 
+            # Visita l'arbre sintàctic
             visitor = TreeVisitor(type_table)
             arbre = visitor.visit(tree)
 
-            # Crea i dibuixa arbre d'expressions
             temporal_type_table = {}
-
             arbre = assignaTipus(arbre,type_table,temporal_type_table)
-
-            # Dibuixa taula de tipus
-            #type_table = visitor.getTable()
-
-            final_table = { keys : values for keys, values in type_table.items()}
-
-            for key,value in temporal_type_table.items():
-                final_table[key] = value
 
             st.dataframe(type_table)
 
-            if not definicio:
+            if not definicio: # Si és una expressió, continua amb inferència
 
+                # Fa arbre DOT
                 printArbre(arbre)
-                if not definicio: 
-                    st.graphviz_chart(dot.source)
+                st.graphviz_chart(dot.source)
 
                 type_vars_table = {}
                 arbre = infereixTipus(arbre,type_table,temporal_type_table,type_vars_table)
 
+                # Reset de l'arbre DOT per fer un altre amb els nous tipus
                 dot = Digraph()
-
-                temp = {}
-                for key,value in temporal_type_table.items():
-                    temp[key] = type_vars_table[value]
-                temporal_type_table = temp
-
-                arbre = assignaTipus(arbre,type_table,temporal_type_table)
-
                 printArbre(arbre)
                 st.graphviz_chart(dot.source)
                     
+                # Ara volem la traducció variable tipus -> tipus
                 st.dataframe(type_vars_table)
                 
             st.session_state['type_table'] = dumps(type_table)
@@ -345,8 +306,11 @@ if submit_button:
             st.write('Hi ha hagut un error:\n',str(e))
             print('Hi ha hagut un error:\n',str(e))
 
-    else: # Hi ha errors
-        st.write(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
+    else: # Hi ha errors de sintaxi
+        syntax_errors = parser.getNumberOfSyntaxErrors()
+        if syntax_errors == 1:
+            st.write(1, 'error de sintaxi.')
+        else:
+            st.write(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
         for error in err_listener.errors:
             st.write(error)
-        #st.write(tree.toStringTree(recog=parser))
