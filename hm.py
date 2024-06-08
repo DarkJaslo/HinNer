@@ -123,20 +123,14 @@ def grabTipus(tipus_sencer: str):
 
     return tipus_sencer[st:end], tipus_sencer[end+4:ultim]
 
-
-# (N -> (N -> N))
-# ((N -> N) -> (N -> N))
-# c (N->N)
-# 2 :: a -> 2 :: N
-
-# a -> (N->N)
-
 def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_vars_table: dict):
     match t:
         case Node(ind, sim, l, r, tip):
             if sim in type_table.keys():
                 return Node(ind,sim,l,r,type_table[sim])
             elif sim in temporal_type_table.keys():
+                if temporal_type_table[sim] in type_vars_table.keys():
+                    return Node(ind,sim,l,r,type_vars_table[temporal_type_table[sim]])
                 return Node(ind,sim,l,r,temporal_type_table[sim])
             elif sim == '@':
                 l = infereixTipus(l,type_table,temporal_type_table,type_vars_table)
@@ -163,6 +157,14 @@ def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_va
                 t = setTipus(t,lresta)
                 type_vars_table[tip] = lresta
                 return Node(ind,sim,l,r,lresta) # Sempre sabem el tipus de la funcio
+            elif sim == '\u03BB':
+                r = infereixTipus(r,type_table,temporal_type_table,type_vars_table)
+                l = infereixTipus(l,type_table,temporal_type_table,type_vars_table)
+                tipus = '(' + l.tipus + ' -> ' + r.tipus + ')'
+                t = setTipus(t,tipus)
+                type_vars_table[tip] = tipus
+                return Node(ind,sim,l,r,tipus)
+
                         
 
 
@@ -196,7 +198,6 @@ class TreeVisitor(hmVisitor):
     
     def visitDefinicio(self, ctx:hmParser.DefinicioContext):
         [thing, symb, typedef] = list(ctx.getChildren())
-        # La idea per mes tard es que type_id no sigui una string, sino un arbre d'inferencia
         text = self.visit(typedef)
         self.type_table[thing.getText()] = text 
 
@@ -262,7 +263,7 @@ class TreeVisitor(hmVisitor):
         
 # Crea interficie
 user_input = st.text_input("Expressió:")
-submit_button = st.button("Submit")
+submit_button = st.button("Fer")
 
 # Crea graf
 dot = Digraph()
@@ -292,50 +293,58 @@ if submit_button:
     tree = parser.root()
 
     if parser.getNumberOfSyntaxErrors() == 0:
-        type_table = loads(st.session_state['type_table'])
+        try:
+            type_table = loads(st.session_state['type_table'])
 
-        visitor = TreeVisitor(type_table)
-        arbre = visitor.visit(tree)
+            visitor = TreeVisitor(type_table)
+            arbre = visitor.visit(tree)
 
-        # Crea i dibuixa arbre d'expressions
-        temporal_type_table = {}
-
-        arbre = assignaTipus(arbre,type_table,temporal_type_table)
-
-        # Dibuixa taula de tipus
-        #type_table = visitor.getTable()
-
-        final_table = { keys : values for keys, values in type_table.items()}
-
-        for key,value in temporal_type_table.items():
-            final_table[key] = value
-
-        st.dataframe(final_table)
-
-        if not definicio:
-
-            printArbre(arbre)
-            if not definicio: 
-                st.graphviz_chart(dot.source)
-
-            type_vars_table = {}
-            arbre = infereixTipus(arbre,type_table,temporal_type_table,type_vars_table)
-
-            dot = Digraph()
-
-            temp = {}
-            for key,value in temporal_type_table.items():
-                temp[key] = type_vars_table[value]
-            temporal_type_table = temp
+            # Crea i dibuixa arbre d'expressions
+            temporal_type_table = {}
 
             arbre = assignaTipus(arbre,type_table,temporal_type_table)
 
-            printArbre(arbre)
-            st.graphviz_chart(dot.source)
+            # Dibuixa taula de tipus
+            #type_table = visitor.getTable()
+
+            final_table = { keys : values for keys, values in type_table.items()}
+
+            for key,value in temporal_type_table.items():
+                final_table[key] = value
+
+            st.dataframe(type_table)
+
+            if not definicio:
+
+                printArbre(arbre)
+                if not definicio: 
+                    st.graphviz_chart(dot.source)
+
+                type_vars_table = {}
+                arbre = infereixTipus(arbre,type_table,temporal_type_table,type_vars_table)
+
+                dot = Digraph()
+
+                temp = {}
+                for key,value in temporal_type_table.items():
+                    temp[key] = type_vars_table[value]
+                temporal_type_table = temp
+
+                arbre = assignaTipus(arbre,type_table,temporal_type_table)
+
+                printArbre(arbre)
+                st.graphviz_chart(dot.source)
+                    
+                st.dataframe(type_vars_table)
                 
-            st.dataframe(type_vars_table)
-            
-        st.session_state['type_table'] = dumps(type_table)
+            st.session_state['type_table'] = dumps(type_table)
+        except ExcepcioTipus as e:
+            st.write(str(e))
+            print(str(e))
+        except Exception as e:
+            st.write('Hi ha hagut un error:\n',str(e))
+            print('Hi ha hagut un error:\n',str(e))
+
     else: # Hi ha errors
         st.write(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
         for error in err_listener.errors:

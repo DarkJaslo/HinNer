@@ -14,7 +14,7 @@ def serializedATN():
         1,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,5,2,23,8,2,10,2,12,2,26,9,2,
         1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,3,3,40,8,3,1,3,1,
         3,5,3,44,8,3,10,3,12,3,47,9,3,1,3,0,2,4,6,4,0,2,4,6,0,1,2,0,7,8,
-        10,11,51,0,10,1,0,0,0,2,12,1,0,0,0,4,16,1,0,0,0,6,39,1,0,0,0,8,11,
+        11,11,51,0,10,1,0,0,0,2,12,1,0,0,0,4,16,1,0,0,0,6,39,1,0,0,0,8,11,
         3,6,3,0,9,11,3,2,1,0,10,8,1,0,0,0,10,9,1,0,0,0,11,1,1,0,0,0,12,13,
         7,0,0,0,13,14,5,1,0,0,14,15,3,4,2,0,15,3,1,0,0,0,16,17,6,2,-1,0,
         17,18,5,10,0,0,18,24,1,0,0,0,19,20,10,1,0,0,20,21,5,2,0,0,21,23,
@@ -159,8 +159,6 @@ class hmParser ( Parser ):
 
         def ID(self):
             return self.getToken(hmParser.ID, 0)
-        def TYPEID(self):
-            return self.getToken(hmParser.TYPEID, 0)
         def NUM(self):
             return self.getToken(hmParser.NUM, 0)
         def OPPAR(self):
@@ -184,7 +182,7 @@ class hmParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 12
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 3456) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 2432) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
