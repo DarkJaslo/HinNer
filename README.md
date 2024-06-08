@@ -15,7 +15,7 @@ streamlit run hm.py
 
 Això donarà a la terminal un enllaç a localhost per fer servir la pàgina de Streamlit.
 
-#### Funcionalitats
+### Funcionalitats
 
 L'analitzador té les funcionalitats descrites als 6 punts de l'enunciat de la pràctica. 
 
@@ -46,7 +46,7 @@ var :: Natural
 \x -> (*) var x
 ```
 
-#### Informació sobre la implementació
+### Informació sobre la implementació
 
 La part d'inferència de tipus es fa purament amb l'arbre generat pel visitador, alguns diccionaris i tractament de _strings_. 
 
