@@ -8,7 +8,6 @@ import streamlit as st
 from dataclasses import dataclass
 from pickle import dumps, loads  #per Streamlit 
 from antlr4.error.ErrorListener import ErrorListener
-import pandas as pd # DataFrames
 
 # Generador pels tipus
 def generador_lletres():
@@ -41,6 +40,12 @@ def setTipus(a: Arbre, tipus:str):
     match a:
         case Node(i,s,e,d,t):
             return Node(i,s,e,d,tipus)
+        
+def setTipusSubs(a: Arbre, tipus_antic:str, tipus_nou:str):
+    match a:
+        case Node(i,s,e,d,t):
+            nou_tipus = t.replace(tipus_antic,tipus_nou)
+            return Node(i,s,e,d,nou_tipus)
         
 def arbreEsq(a: Arbre): 
     match a:
@@ -77,14 +82,14 @@ def assignaTipus(t: Arbre, type_table: dict, temporal_type_table: dict):
                         temporal_type_table[sim] = next(lletres)
                     temp = True
                 t = setTipus(t,temporal_type_table[sim]) if temp else setTipus(t,type_table[sim])
-            else:
-                t = setTipus(t,next(lletres))                
+            elif tip=='':
+                t = setTipus(t,next(lletres))             
                 
             le = assignaTipus(l,type_table,temporal_type_table)
             ri = assignaTipus(r,type_table,temporal_type_table)
             return Node(ind,sim,le,ri,t.tipus)
         case Buit():
-            return Buit()
+            return Buit() 
 
 def printArbre(t: Arbre):
     match t:
@@ -101,6 +106,67 @@ def printArbre(t: Arbre):
             if not esBuit(r):
                 (ir,sr) = valorNode(r)
                 dot.edge(str(ind),str(ir))
+
+class ExcepcioTipus(Exception):
+    pass
+
+# A una definicio com (Tip -> (Tip2 -> Tip3)), agafa 'Tip'
+def grabTipus(tipus_sencer: str):
+    st = 1
+
+    ultim = -1
+    if tipus_sencer[st] == '(': # Expressio amb parentesi [ex: (N -> N)]
+        end = tipus_sencer.find(')', st)
+        ultim -= 1
+    else:
+        end = tipus_sencer.find(' ', st)
+
+    return tipus_sencer[st:end], tipus_sencer[end+4:ultim]
+
+
+# (N -> (N -> N))
+# ((N -> N) -> (N -> N))
+# c (N->N)
+# 2 :: a -> 2 :: N
+
+# a -> (N->N)
+
+def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_vars_table: dict):
+    match t:
+        case Node(ind, sim, l, r, tip):
+            if sim in type_table.keys():
+                return Node(ind,sim,l,r,type_table[sim])
+            elif sim in temporal_type_table.keys():
+                return Node(ind,sim,l,r,temporal_type_table[sim])
+            elif sim == '@':
+                l = infereixTipus(l,type_table,temporal_type_table,type_vars_table)
+                ltip = l.tipus
+                r = infereixTipus(r,type_table,temporal_type_table,type_vars_table)
+                rtip = r.tipus
+
+                ltipus, lresta = grabTipus(ltip)
+
+                l_concret = ltipus in type_table.values()
+                r_concret = rtip in type_table.values()
+                iguals = ltipus == rtip
+
+                if not iguals and l_concret and r_concret:
+                    raise ExcepcioTipus(f"Error de tipus: {ltipus} vs {rtip}")
+                
+                #if iguals:
+                #    return lresta
+                    
+                if l_concret and not r_concret:
+                    r = setTipus(r, ltipus)
+                    type_vars_table[rtip] = ltipus
+
+                t = setTipus(t,lresta)
+                type_vars_table[tip] = lresta
+                return Node(ind,sim,l,r,lresta) # Sempre sabem el tipus de la funcio   
+
+                # No es gestiona quan r_concret and not l_concret (funcions tipus a -> b -> c)
+                        
+
 
 class HinnerErrorListener(ErrorListener):
     def __init__(self):
@@ -211,6 +277,8 @@ if 'type_table' not in st.session_state:
 if submit_button:
 
     #st.write("Text:", user_input)
+    definicio = user_input.find('::') != -1
+
     input_stream = InputStream(user_input)
 
     dot = Digraph()
@@ -241,24 +309,35 @@ if submit_button:
         #type_table = visitor.getTable()
 
         final_table = { keys : values for keys, values in type_table.items()}
-        print('types')
-        print(type_table.items())
-        print('final types')
-        print(final_table.items())
 
         for key,value in temporal_type_table.items():
             final_table[key] = value
 
         st.dataframe(final_table)
 
-        printArbre(arbre)
-        st.graphviz_chart(dot.source)
+        if not definicio:
 
-        print('types2')
-        print(type_table.items())
-        print('final types2')
-        print(final_table.items())
+            printArbre(arbre)
+            if not definicio: 
+                st.graphviz_chart(dot.source)
 
+            type_vars_table = {}
+            arbre = infereixTipus(arbre,type_table,temporal_type_table,type_vars_table)
+
+            dot = Digraph()
+
+            temp = {}
+            for key,value in temporal_type_table.items():
+                temp[key] = type_vars_table[value]
+            temporal_type_table = temp
+
+            arbre = assignaTipus(arbre,type_table,temporal_type_table)
+
+            printArbre(arbre)
+            st.graphviz_chart(dot.source)
+                
+            st.dataframe(type_vars_table)
+            
         st.session_state['type_table'] = dumps(type_table)
     else: # Hi ha errors
         st.write(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
