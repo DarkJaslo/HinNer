@@ -33,7 +33,7 @@ I per tant no fa inferència de tipus sobre funcions. Això sí funciona:
 func :: A -> B -> C
 ```
 
-I s'assumirà que tots els identificadors de tipus són tipus concrets (A, N, Natural, Bool, QualsevolCosa). 
+S'assumirà que tots els identificadors de tipus són tipus concrets (A, N, Natural, Bool, QualsevolCosa). 
 
 Un exemple que funciona:
 
