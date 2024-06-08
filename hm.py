@@ -191,6 +191,10 @@ class TreeVisitor(hmVisitor):
         text = self.visit(typedef)
         self.type_table[thing.getText()] = text 
 
+    def visitTipusCompost(self, ctx:hmParser.TipusCompostContext):
+        [pL, tipusL, op, tipusR, pR] = list(ctx.getChildren())
+        return '(' + self.visit(tipusL) + ' -> ' + self.visit(tipusR) + ')'
+
     def visitTipusBase(self, ctx:hmParser.TipusBaseContext):
         [base] = list(ctx.getChildren())
         return base.getText()

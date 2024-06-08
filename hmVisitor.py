@@ -19,6 +19,11 @@ class hmVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by hmParser#tipusCompost.
+    def visitTipusCompost(self, ctx:hmParser.TipusCompostContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by hmParser#tipusBase.
     def visitTipusBase(self, ctx:hmParser.TipusBaseContext):
         return self.visitChildren(ctx)

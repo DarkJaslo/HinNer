@@ -23,6 +23,7 @@ def : (ID | NUM | OPPAR) '::' tipus   #definicio
      ;
 
 tipus: TYPEID       #tipusBase
+     | '(' tipus '->' tipus ')' #tipusCompost
      | <assoc=right> tipus '->' tipus #tipusFuncio
      ;
 
