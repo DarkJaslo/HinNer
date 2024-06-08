@@ -146,7 +146,7 @@ def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_va
 
                 ltipus, lresta = grabTipus(ltip)
 
-                l_concret = ltipus in type_table.values()
+                l_concret = True #No es gestionen funcions amb variables de tipus de moment
                 r_concret = rtip in type_table.values()
                 iguals = ltipus == rtip
 
@@ -162,9 +162,7 @@ def infereixTipus(t: Arbre, type_table: dict, temporal_type_table: dict, type_va
 
                 t = setTipus(t,lresta)
                 type_vars_table[tip] = lresta
-                return Node(ind,sim,l,r,lresta) # Sempre sabem el tipus de la funcio   
-
-                # No es gestiona quan r_concret and not l_concret (funcions tipus a -> b -> c)
+                return Node(ind,sim,l,r,lresta) # Sempre sabem el tipus de la funcio
                         
 
 
@@ -276,7 +274,6 @@ if 'type_table' not in st.session_state:
 # Quan es prem el boto
 if submit_button:
 
-    #st.write("Text:", user_input)
     definicio = user_input.find('::') != -1
 
     input_stream = InputStream(user_input)
