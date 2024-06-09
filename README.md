@@ -51,3 +51,5 @@ var :: Natural
 La part d'inferència de tipus es fa purament amb l'arbre generat pel visitador, alguns diccionaris i tractament de _strings_. 
 
 Pel que fa a la resta, es poden veure els comentaris.
+
+S'ha fet servir _autopep8_ pel format del codi.
