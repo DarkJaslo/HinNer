@@ -3,7 +3,7 @@ from antlr4 import *
 from hmLexer import hmLexer
 from hmParser import hmParser
 from hmVisitor import hmVisitor
-from graphviz import Digraph
+from graphviz import Graph
 import streamlit as st
 from dataclasses import dataclass
 from pickle import dumps, loads  # per Streamlit
@@ -291,7 +291,7 @@ user_input = st.text_input("Expressió:")
 submit_button = st.button("Fer")
 
 # Crea graf
-dot = Digraph()
+dot = Graph()
 
 # Crea diccionari de tipus reals si es el primer cop que s'executa
 if 'type_table' not in st.session_state:
@@ -304,7 +304,7 @@ if submit_button:
 
     input_stream = InputStream(user_input)
 
-    dot = Digraph()
+    dot = Graph()
 
     lexer = hmLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
@@ -341,7 +341,7 @@ if submit_button:
                     arbre, type_table, temporal_type_table, type_vars_table)
 
                 # Reset de l'arbre DOT per fer un altre amb els nous tipus
-                dot = Digraph()
+                dot = Graph()
                 printArbre(arbre)
                 st.graphviz_chart(dot.source)
 
