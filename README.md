@@ -1,5 +1,7 @@
 # HinNer-LP-2024
 
+Pràctica de llenguatges de programació, primavera 2024. El nom ve de Hindley-Milner.
+
 Analitzador d'expressions tipus Haskell amb inferència de tipus senzilla.
 
 Per executar, cal primer processar la gramàtica:
@@ -48,7 +50,7 @@ var :: Natural
 
 ### Informació sobre la implementació
 
-La part d'inferència de tipus es fa purament amb l'arbre generat pel visitador, alguns diccionaris i tractament de _strings_. 
+La part d'inferència de tipus es fa purament amb l'arbre generat pel visitador, alguns diccionaris i tractament de _strings_. Això últim no era el que es pretenia, però no se'ns va donar info i em feia més gràcia això que perdre el temps buscant, encara més amb totes les altres entregues que hi havia.
 
 Pel que fa a la resta, es poden veure els comentaris.
 
